@@ -96,8 +96,9 @@ jobs:
         sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false --luceepass ibtest --systemuser $USER --debugtrace debug.txt
         # Post install, make HTTP and check return code 
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
-        curl -v http://127.0.0.1:8888/index.cfm
-        sudo /tmp/lucee/lucee_ctl stop
+        echo "<cfscript>if (server.lucee.version neq url.version) throw 'wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>"
+        curl -v "http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }}"
+        #sudo /tmp/lucee/lucee_ctl stop
     - name: debug failure
       if: ${{ always() }}
       run: |
