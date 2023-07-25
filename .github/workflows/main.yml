@@ -71,7 +71,7 @@ jobs:
         cat lucee/lucee.xml.template | sed -e "s,<version>LUCEE_VERSION</version>,<version>${{ env.LUCEE_VERSION }}</version>," > lucee/lucee.xml
     - name: Write out license
       env:
-        INSTALLBUILDER_LICENSE: ${ {secrets.INSTALLBUILDER_LICENSE }}
+        INSTALLBUILDER_LICENSE: ${{ secrets.INSTALLBUILDER_LICENSE }}
       shell: bash
       run: |
           echo "$INSTALLBUILDER_LICENSE" >> license.xml
@@ -79,7 +79,6 @@ jobs:
     - name: Build Linux Lucee Installer
       run: |
         cd lucee
-        echo ${{ secrets.S3_SECRET_KEY_TEST }} > license.xml
         /tmp/ib/bin/builder quickbuild lucee.xml  --license license.xml
     - name: check installer has correct version
       run: |
