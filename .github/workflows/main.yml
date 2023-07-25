@@ -86,6 +86,7 @@ jobs:
         fi
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
+      if: ${{ failure() }} # temp disabled slowwww
       with:
           name: lucee-installer-run
           path: /tmp/ib/output/*.run
@@ -98,5 +99,6 @@ jobs:
       if: ${{ failure() }}
       run: |
           ls -l
-          cat debug.txt
+          cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
+          cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log          
           cat /tmp/lucee/tomcat/logs/catalina.out    
