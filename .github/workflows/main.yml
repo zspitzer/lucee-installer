@@ -71,7 +71,7 @@ jobs:
         cat lucee/lucee.xml.template | sed -e "s,<version>LUCEE_VERSION</version>,<version>${{ env.LUCEE_VERSION }}</version>," > lucee/lucee.xml
     - name: Write out license
       env:
-        INSTALLBUILDER_LICENSE: ${{secrets.INSTALLBUILDER_LICENSE}
+        INSTALLBUILDER_LICENSE: ${ {secrets.INSTALLBUILDER_LICENSE }}
       shell: bash
       run: |
           echo "$INSTALLBUILDER_LICENSE" >> license.xml
