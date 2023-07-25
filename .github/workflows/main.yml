@@ -72,7 +72,8 @@ jobs:
     - name: Build Linux Lucee Installer
       run: |
         cd lucee
-        /tmp/ib/bin/builder quickbuild lucee.xml
+        echo ${{ secrets.S3_SECRET_KEY_TEST }} > license.xml
+        /tmp/ib/bin/builder quickbuild lucee.xml  --license license.xml
     - name: check installer has correct version
       run: |
         ls -laht /tmp/ib/output/
@@ -95,10 +96,14 @@ jobs:
         sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false --luceepass ibtest --systemuser $USER --debugtrace debug.txt
         # Post install, make HTTP and check return code 
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
+        curl -v http://127.0.0.1:8888/index.cfm
+        sudo /tmp/lucee/lucee_ctl stop
     - name: debug failure
-      if: ${{ failure() }}
+      if: ${{ always() }}
       run: |
           cd /tmp/lucee
+          cat /tmp/lucee/tomcat/logs/catalina.out
+          cat /tmp/lucee/install.log
           ls -lR
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log          
