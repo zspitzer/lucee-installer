@@ -97,7 +97,7 @@ jobs:
         # Post install, make HTTP and check return code 
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
         sleep 5;
-        echo "<cfscript>if (server.lucee.version neq url.version) throw 'wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>"
+        echo "<cfscript>if (server.lucee.version neq url.version) throw 'wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
         curl -v "http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }}"
         sleep 5
         sudo /tmp/lucee/lucee_ctl stop
