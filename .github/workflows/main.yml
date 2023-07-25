@@ -69,6 +69,13 @@ jobs:
     - name: Update Template with version
       run : |
         cat lucee/lucee.xml.template | sed -e "s,<version>LUCEE_VERSION</version>,<version>${{ env.LUCEE_VERSION }}</version>," > lucee/lucee.xml
+    - name: Write out license
+      env:
+        INSTALLBUILDER_LICENSE: ${{secrets.INSTALLBUILDER_LICENSE}
+      shell: bash
+      run: |
+          echo "$INSTALLBUILDER_LICENSE" >> license.xml
+          cat license.xml
     - name: Build Linux Lucee Installer
       run: |
         cd lucee
@@ -97,16 +104,16 @@ jobs:
         # Post install, make HTTP and check return code 
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
         sleep 5;
-        echo "<cfscript>if (server.lucee.version neq url.version) throw 'wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
+        echo "<cfscript>if (server.lucee.version neq url.version) header statuscode="500" statustext='wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
         curl -v "http://127.0.0.1:8888/check.cfm?version=a${{ env.LUCEE_VERSION }}" --fail-with-body
-        sleep 5
-        sudo /tmp/lucee/lucee_ctl stop
+        #sleep 5
+        #sudo /tmp/lucee/lucee_ctl stop
     - name: debug failure
-      if: ${{ always() }}
+      if: ${{ failure() }}
       run: |
-          cd /tmp/lucee
           cat /tmp/lucee/tomcat/logs/catalina.out
           #cat /tmp/lucee/install.log
+          cd /tmp/lucee
           ls -lR
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log          
