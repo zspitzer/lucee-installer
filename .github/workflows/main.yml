@@ -104,7 +104,7 @@ jobs:
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
         sleep 5;
         echo "<cfscript>if (server.lucee.version neq url.version) header statuscode="500" statustext='wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
-        curl -v "http://127.0.0.1:8888/check.cfm?version=a${{ env.LUCEE_VERSION }}" --fail-with-body
+        curl "http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }}" --fail-with-body
         #sleep 5
         #sudo /tmp/lucee/lucee_ctl stop
     - name: debug failure
