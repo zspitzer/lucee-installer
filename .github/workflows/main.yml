@@ -75,7 +75,6 @@ jobs:
       shell: bash
       run: |
           echo "$INSTALLBUILDER_LICENSE" >> license.xml
-          cat license.xml
     - name: Build Linux Lucee Installer
       run: |
         cd lucee
@@ -95,7 +94,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: ${{ failure() }} # temp disabled slowwww
       with:
-          name: lucee-installer-run
+          name: lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
           path: /tmp/ib/output/*.run
     - name: run installer
       run: |
