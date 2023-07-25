@@ -90,9 +90,13 @@ jobs:
           name: lucee-installer-run
           path: /tmp/ib/output/*.run
     - name: run installer
-      run : |
-        sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false --luceepass ibtest --systemuser $USER
-        cat /tmp/lucee/tomcat/logs/catalina.out
+      run: |
+        sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false --luceepass ibtest --systemuser $USER --debugtrace debug.txt
         # Post install, make HTTP and check return code 
         # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
-    
+    - name: debug failure
+      if: ${{ failure() }}
+      run: |
+          ls -l
+          cat debug.txt
+          cat /tmp/lucee/tomcat/logs/catalina.out    
