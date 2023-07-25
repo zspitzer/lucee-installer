@@ -74,11 +74,11 @@ jobs:
         INSTALLBUILDER_LICENSE: ${{ secrets.INSTALLBUILDER_LICENSE }}
       shell: bash
       run: |
-          echo "$INSTALLBUILDER_LICENSE" >> license.xml
+          echo "$INSTALLBUILDER_LICENSE" >> lucee/license.xml
     - name: Build Linux Lucee Installer
       run: |
         cd lucee
-        /tmp/ib/bin/builder quickbuild lucee.xml  --license license.xml
+        /tmp/ib/bin/builder build lucee.xml --verbose --license license.xml
     - name: check installer has correct version
       run: |
         ls -laht /tmp/ib/output/
@@ -98,9 +98,9 @@ jobs:
           path: /tmp/ib/output/*.run
     - name: run installer
       run: |
-        sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false --luceepass ibtest --systemuser $USER --debugtrace debug.txt
-        # Post install, make HTTP and check return code 
-        # i.e. the You are now successfully running Lucee 5.4.1.2-SNAPSHOT on your system! banner
+        sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
+          --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
+          --luceepass ibtest --systemuser $USER --installjre true
         sleep 5;
         echo "<cfscript>if (server.lucee.version neq url.version) header statuscode="500" statustext='wrong version #server.lucee.version#'; echo(server.lucee.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
         curl "http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }}" --fail-with-body
