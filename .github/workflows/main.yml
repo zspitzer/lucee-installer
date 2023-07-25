@@ -52,7 +52,7 @@ jobs:
         # rm ${{ env.TOMCAT_NAME }}
         mv lucee/tomcat9/apache-tomcat-9.0.78  lucee/tomcat9/tomcat
         rm -rf lucee/tomcat9/tomcat/webapps
-        cp -ar lucee/tomcat9/tomcat-lucee-conf/ lucee/tomcat9/tomcat/
+        cp -ar lucee/tomcat9/tomcat-lucee-conf lucee/tomcat9/tomcat
     - name: Download JRE
       run: |
         curl "${{ env.JRE_URL }}" -o ${{ env.JRE_NAME }} -L
