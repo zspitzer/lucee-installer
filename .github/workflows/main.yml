@@ -45,6 +45,7 @@ jobs:
         curl ${{ env.IB_URL }} -o ${{ env.IB_NAME }}
         ls -l
         chmod a+x ${{ env.IB_NAME }}
+        echo "running installer...."
         ./${{ env.IB_NAME }} --prefix /tmp/ib --mode unattended
     - name: Update Template with version
       run : |
@@ -64,7 +65,7 @@ jobs:
     - name: Download JRE Linux
       run: |
         mkdir linux_jre
-        cf linux_jre
+        cd linux_jre
         curl "${{ env.JRE_LINUX_URL }}" -o ${{ env.JRE_LINUX_NAME }} -L
         tar zxf ${{ env.JRE_LINUX_NAME }}
         ls -l
@@ -73,7 +74,7 @@ jobs:
     - name: Download JRE Windows
       run: |
         mkdir win_jre
-        cf win_jre
+        cd win_jre
         curl "${{ env.JRE_WIN_URL }}" -o ${{ env.JRE_WIN_NAME }} -L
         tar zxf ${{ env.JRE_WIN_NAME }}
         ls -l
@@ -97,7 +98,7 @@ jobs:
     - name: Build Lucee Installer - Linux x64
       run: |
         cd lucee
-        /tmp/ib/bin/builder build lucee.xml --verbose --license license.xml
+        /tmp/ib/bin/builder build lucee.xml linux --verbose --license license.xml
     - name: Download and prepare Tomcat Windows
       run: |
         pwd
@@ -115,7 +116,7 @@ jobs:
     - name: Build Lucee Installer - Windows x64
       run: |
         cd lucee
-        /tmp/ib/bin/builder build lucee.xml --verbose --license license.xml
+        /tmp/ib/bin/builder build lucee.xml windows --verbose --license license.xml
     - name: check linux installer has correct version
       run: |
         ls -laht /tmp/ib/output/
