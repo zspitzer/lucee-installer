@@ -36,7 +36,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3.1.0
@@ -83,13 +82,13 @@ jobs:
     - name: Download and prepare Tomcat Linux
       run: |
         pwd
-        curl ${{ env.TOMCAT_URL }} -o ${{ env.TOMCAT_NAME }} -s
+        curl ${{ env.TOMCAT_LINUX_URL }} -o ${{ env.TOMCAT_LINUX_NAME }} -s
         ls -l
         cd lucee/tomcat9/
         rm -rf tomcat
         rm -rfv ${{ env.TOMCAT_DIR }}
         ls -l
-        tar zxf ../../${{ env.TOMCAT_NAME }} # --directory ./tomcat9
+        tar zxf ../../${{ env.TOMCAT_LINUX_NAME }}
         cd ../..
         pwd
         mv lucee/tomcat9/${{ env.TOMCAT_DIR }} lucee/tomcat9/tomcat
@@ -102,12 +101,12 @@ jobs:
     - name: Download and prepare Tomcat Windows
       run: |
         pwd
-        curl ${{ env.TOMCAT_URL }} -o ${{ env.TOMCAT_NAME }} -s
+        curl ${{ env.TOMCAT_WIN_URL }} -o ${{ env.TOMCAT_WIN_NAME }} -s
         ls -l
         cd lucee/tomcat9/
         rm -rfv tomcat
         rm -rfv ${{ env.TOMCAT_DIR }}
-        tar zxf ../../${{ env.TOMCAT_NAME }} # --directory ./tomcat9
+        unzip ../../${{ env.TOMCAT_WIN_NAME }}
         cd ../..
         pwd
         mv lucee/tomcat9/${{ env.TOMCAT_DIR }} lucee/tomcat9/tomcat
@@ -161,6 +160,7 @@ jobs:
 
   test-linux:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Download Linux Installer artifact
         uses: actions/download-artifact@v3
@@ -192,7 +192,8 @@ jobs:
             #cat /tmp/lucee/tomcat/logs/catalina.out
 
   test-windows:
-    runs-on: windows
+    runs-on: windows-latest
+    needs: build
     steps:
       - name: Download Windows Installer artifact
         uses: actions/download-artifact@v3
