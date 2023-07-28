@@ -76,7 +76,7 @@ jobs:
         mkdir win_jre
         cd win_jre
         curl "${{ env.JRE_WIN_URL }}" -o ${{ env.JRE_WIN_NAME }} -L
-        tar zxf ${{ env.JRE_WIN_NAME }}
+        unzip ${{ env.JRE_WIN_NAME }}
         ls -l
         cp -r ${{ env.JRE_WIN_DIR }}/* ../jre/jre64-win/jre/
         rm -rf ${{ env.JRE_WIN_DIR }}
@@ -158,6 +158,39 @@ jobs:
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
           #cat /tmp/lucee/tomcat/logs/catalina.out
+
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Linux Installer artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
+      - name: list dir
+        run: |
+          ls -l
+          unzip lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
+      - name: run installer
+        run: |
+          sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
+            --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
+            --luceepass ibtest --systemuser $USER --installjre true
+          sleep 5;
+          echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
+          curl http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }} --fail-with-body -o $GITHUB_STEP_SUMMARY
+          #sleep 5
+          #sudo /tmp/lucee/lucee_ctl stop
+      - name: debug failure
+        if: ${{ failure() }}
+        run: |
+            cat /tmp/lucee/tomcat/logs/catalina.out
+            #cat /tmp/lucee/install.log
+            cd /tmp/lucee
+            ls -lR
+            #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
+            #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
+            #cat /tmp/lucee/tomcat/logs/catalina.out
+
   test-windows:
     runs-on: windows
     steps:
@@ -169,3 +202,14 @@ jobs:
         run: |
           ls -l
           unzip lucee-installer-${{ env.LUCEE_VERSION }}-x64-windows
+          ls -l
+      - name: debug failure
+        if: ${{ failure() }}
+        run: |
+          cat /tmp/lucee/tomcat/logs/catalina.out
+          #cat /tmp/lucee/install.log
+          cd /tmp/lucee
+          ls -lR
+          #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
+          #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
+          #cat /tmp/lucee/tomcat/logs/catalina.out
