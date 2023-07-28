@@ -97,7 +97,7 @@ jobs:
     - name: Build Lucee Installer - Linux x64
       run: |
         cd lucee
-        /tmp/ib/bin/builder build lucee.xml linux --verbose --license license.xml
+        /tmp/ib/bin/builder build lucee.xml linux-x64 --verbose --license license.xml
     - name: Download and prepare Tomcat Windows
       run: |
         pwd
@@ -115,7 +115,7 @@ jobs:
     - name: Build Lucee Installer - Windows x64
       run: |
         cd lucee
-        /tmp/ib/bin/builder build lucee.xml windows --verbose --license license.xml
+        /tmp/ib/bin/builder build lucee.xml windows-x64 --verbose --license license.xml
     - name: check linux installer has correct version
       run: |
         ls -laht /tmp/ib/output/
@@ -135,28 +135,8 @@ jobs:
     - name: Upload Artifact - Windows Installer
       uses: actions/upload-artifact@v3
       with:
-          name: lucee-installer-${{ env.LUCEE_VERSION }}-x64-windows
+          name: lucee-installer-${{ env.LUCEE_VERSION }}-windows
           path: /tmp/ib/output/*.exe
-    - name: run installer
-      run: |
-        sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
-          --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
-          --luceepass ibtest --systemuser $USER --installjre true
-        sleep 5;
-        echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
-        curl http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }} --fail-with-body -o $GITHUB_STEP_SUMMARY
-        #sleep 5
-        #sudo /tmp/lucee/lucee_ctl stop
-    - name: debug failure
-      if: ${{ failure() }}
-      run: |
-          cat /tmp/lucee/tomcat/logs/catalina.out
-          #cat /tmp/lucee/install.log
-          cd /tmp/lucee
-          ls -lR
-          #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
-          #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
-          #cat /tmp/lucee/tomcat/logs/catalina.out
 
   test-linux:
     runs-on: ubuntu-latest
@@ -170,6 +150,7 @@ jobs:
         run: |
           ls -l
           unzip lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
+          ls -l
       - name: run installer
         run: |
           sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
@@ -198,11 +179,11 @@ jobs:
       - name: Download Windows Installer artifact
         uses: actions/download-artifact@v3
         with:
-          name: lucee-installer-${{ env.LUCEE_VERSION }}-x64-windows
+          name: lucee-installer-${{ env.LUCEE_VERSION }}-windows
       - name: list dir
         run: |
           ls -l
-          unzip lucee-installer-${{ env.LUCEE_VERSION }}-x64-windows
+          unzip lucee-installer-${{ env.LUCEE_VERSION }}-windows
           ls -l
       - name: debug failure
         if: ${{ failure() }}
