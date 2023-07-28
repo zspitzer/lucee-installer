@@ -149,11 +149,10 @@ jobs:
       - name: list dir
         run: |
           ls -l
-          unzip lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
-          ls -l
-      - name: run installer
+      - name: Run Linux installer
         run: |
-          sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
+          chmod +x lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run
+          sudo lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
             --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
             --luceepass ibtest --systemuser $USER --installjre true
           sleep 5;
@@ -182,16 +181,14 @@ jobs:
           name: lucee-installer-${{ env.LUCEE_VERSION }}-windows
       - name: list dir
         run: |
-          ls -l
-          unzip lucee-installer-${{ env.LUCEE_VERSION }}-windows
-          ls -l
+          dir
+      - name: Run Windows Installer
+        run: |
+          lucee-${{ env.LUCEE_VERSION }}-windows-x64-installer.exe `
+            --mode unattended --installconn false --installmodcfml false --installiis false --startatboot false `
+            --luceepass ibtest --installjre true
       - name: debug failure
         if: ${{ failure() }}
         run: |
-          cat /tmp/lucee/tomcat/logs/catalina.out
-          #cat /tmp/lucee/install.log
-          cd /tmp/lucee
-          ls -lR
-          #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
-          #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
-          #cat /tmp/lucee/tomcat/logs/catalina.out
+          type c:\lucee\tomcat\logs\catalina.out
+          # type c:\lucee\install.log
