@@ -20,11 +20,17 @@ on:
 
 env:
   LUCEE_VERSION: 5.4.2.17 #${{ github.event.inputs.LUCEE_VERSION }}
-  JRE_URL: https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jre_x64_linux_hotspot_11.0.20_8.tar.gz
-  JRE_NAME: OpenJDK11U-jre_x64_linux_hotspot_11.0.20_8.tar.gz
-  JRE_DIR: jdk-11.0.20+8-jre
-  TOMCAT_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.tar.gz
-  TOMCAT_NAME: apache-tomcat-9.0.78.tar.gz
+  JRE_LINUX_URL: https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jre_x64_linux_hotspot_11.0.20_8.tar.gz
+  JRE_LINUX_NAME: OpenJDK11U-jre_x64_linux_hotspot_11.0.20_8.tar.gz
+  JRE_LINUX_DIR: jdk-11.0.20+8-jre
+  JRE_WIN_URL: https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jre_x64_windows_hotspot_11.0.20_8.zip
+  JRE_WIN_NAME: OpenJDK11U-jre_x64_windows_hotspot_11.0.20_8.zip
+  JRE_WIN_DIR: jdk-11.0.20+8-jre
+  TOMCAT_LINUX_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.tar.gz
+  TOMCAT_LINUX_NAME: apache-tomcat-9.0.78.tar.gz
+  TOMCAT_WIN_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.zip
+  TOMCAT_WIN_NAME: apache-tomcat-9.0.78.zip
+  TOMCAT_DIR: apache-tomcat-9.0.78
   IB_URL: https://releases.installbuilder.com/installbuilder/installbuilder-enterprise-23.4.0-linux-installer.run
   IB_NAME: installbuilder-enterprise-23.4.0-linux-installer.run
 
@@ -34,32 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3.1.0
-    - name: Download Lucee Jar
-      run: |
-        curl https://cdn.lucee.org/lucee-${{ env.LUCEE_VERSION }}.jar -o lucee-${{ env.LUCEE_VERSION }}.jar -s
-        pwd
-        ls -l
-        mv lucee-${{ env.LUCEE_VERSION }}.jar lucee/lucee/lib/
-    - name: Download and prepare Tomcat
-      run: |
-        pwd
-        curl ${{ env.TOMCAT_URL }} -o ${{ env.TOMCAT_NAME }} -s
-        ls -l
-        cd lucee/tomcat9/
-        tar zxf ../../${{ env.TOMCAT_NAME }} # --directory ./tomcat9
-        cd ../..
-        pwd
-        # rm ${{ env.TOMCAT_NAME }}
-        mv lucee/tomcat9/apache-tomcat-9.0.78  lucee/tomcat9/tomcat
-        rm -rf lucee/tomcat9/tomcat/webapps
-        cp -ar lucee/tomcat9/tomcat-lucee-conf/* lucee/tomcat9/tomcat
-    - name: Download JRE
-      run: |
-        curl "${{ env.JRE_URL }}" -o ${{ env.JRE_NAME }} -L
-        tar zxf ${{ env.JRE_NAME }}
-        ls -l
-        cp -r ${{ env.JRE_DIR }}/* jre/jre64-lin/jre/
-        rm -rf ${{ env.JRE_DIR }}
     - name: Download and Install Install builder
       run: |
         curl ${{ env.IB_URL }} -o ${{ env.IB_NAME }}
@@ -75,11 +55,68 @@ jobs:
       shell: bash
       run: |
           echo "$INSTALLBUILDER_LICENSE" >> lucee/license.xml
-    - name: Build Linux Lucee Installer
+    - name: Download Lucee Jar
+      run: |
+        curl https://cdn.lucee.org/lucee-${{ env.LUCEE_VERSION }}.jar -o lucee-${{ env.LUCEE_VERSION }}.jar -s
+        pwd
+        ls -l
+        mv lucee-${{ env.LUCEE_VERSION }}.jar lucee/lucee/lib/
+    - name: Download JRE Linux
+      run: |
+        mkdir linux_jre
+        cf linux_jre
+        curl "${{ env.JRE_LINUX_URL }}" -o ${{ env.JRE_LINUX_NAME }} -L
+        tar zxf ${{ env.JRE_LINUX_NAME }}
+        ls -l
+        cp -r ${{ env.JRE_LINUX_DIR }}/* jre/jre64-lin/jre/
+        rm -rf ${{ env.JRE_LINUX_DIR }}
+    - name: Download JRE Windows
+      run: |
+        mkdir win_jre
+        cf win_jre
+        curl "${{ env.JRE_WIN_URL }}" -o ${{ env.JRE_WIN_NAME }} -L
+        tar zxf ${{ env.JRE_WIN_NAME }}
+        ls -l
+        cp -r ${{ env.JRE_WIN_DIR }}/* jre/jre64-win/jre/
+        rm -rf ${{ env.JRE_WIN_DIR }}
+    - name: Download and prepare Tomcat Linux
+      run: |
+        pwd
+        curl ${{ env.TOMCAT_URL }} -o ${{ env.TOMCAT_NAME }} -s
+        ls -l
+        cd lucee/tomcat9/
+        rm -rf tomcat
+        rm -rfv ${{ env.TOMCAT_DIR }}
+        ls -l
+        tar zxf ../../${{ env.TOMCAT_NAME }} # --directory ./tomcat9
+        cd ../..
+        pwd
+        mv lucee/tomcat9/${{ env.TOMCAT_DIR }} lucee/tomcat9/tomcat
+        rm -rf lucee/tomcat9/tomcat/webapps
+        cp -ar lucee/tomcat9/tomcat-lucee-conf/* lucee/tomcat9/tomcat
+    - name: Build Lucee Installer - Linux x64
       run: |
         cd lucee
         /tmp/ib/bin/builder build lucee.xml --verbose --license license.xml
-    - name: check installer has correct version
+    - name: Download and prepare Tomcat Windows
+      run: |
+        pwd
+        curl ${{ env.TOMCAT_URL }} -o ${{ env.TOMCAT_NAME }} -s
+        ls -l
+        cd lucee/tomcat9/
+        rm -rfv tomcat
+        rm -rfv ${{ env.TOMCAT_DIR }}
+        tar zxf ../../${{ env.TOMCAT_NAME }} # --directory ./tomcat9
+        cd ../..
+        pwd
+        mv lucee/tomcat9/${{ env.TOMCAT_DIR }} lucee/tomcat9/tomcat
+        rm -rf lucee/tomcat9/tomcat/webapps
+        cp -ar lucee/tomcat9/tomcat-lucee-conf/* lucee/tomcat9/tomcat
+    - name: Build Lucee Installer - Windows x64
+      run: |
+        cd lucee
+        /tmp/ib/bin/builder build lucee.xml --verbose --license license.xml
+    - name: check linux installer has correct version
       run: |
         ls -laht /tmp/ib/output/
         /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run --version
@@ -90,19 +127,23 @@ jobs:
           echo Incorrect version banner
           exit 1
         fi
-    - name: Upload Artifact
+    - name: Upload Artifact - Linux Installer
       uses: actions/upload-artifact@v3
-      if: ${{ failure() }} # temp disabled slowwww
       with:
           name: lucee-installer-${{ env.LUCEE_VERSION }}-linux-run
           path: /tmp/ib/output/*.run
+    - name: Upload Artifact - Windows Installer
+      uses: actions/upload-artifact@v3
+      with:
+          name: lucee-installer-${{ env.LUCEE_VERSION }}-x64-windows
+          path: /tmp/ib/output/*.exe
     - name: run installer
       run: |
         sudo /tmp/ib/output/lucee-${{ env.LUCEE_VERSION }}-linux-x64-installer.run \
           --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
           --luceepass ibtest --systemuser $USER --installjre true
         sleep 5;
-        echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo(server.lucee.version & ' ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
+        echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
         curl http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }} --fail-with-body -o $GITHUB_STEP_SUMMARY
         #sleep 5
         #sudo /tmp/lucee/lucee_ctl stop
@@ -114,5 +155,5 @@ jobs:
           cd /tmp/lucee
           ls -lR
           #cat /tmp/lucee/tomcat/lucee-server/context/logs/out.log
-          #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log          
-          #cat /tmp/lucee/tomcat/logs/catalina.out    
+          #cat /tmp/lucee/tomcat/lucee-server/context/logs/err.log
+          #cat /tmp/lucee/tomcat/logs/catalina.out
