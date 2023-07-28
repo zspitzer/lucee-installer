@@ -28,7 +28,7 @@ env:
   JRE_WIN_DIR: jdk-11.0.20+8-jre
   TOMCAT_LINUX_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.tar.gz
   TOMCAT_LINUX_NAME: apache-tomcat-9.0.78.tar.gz
-  TOMCAT_WIN_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.zip
+  TOMCAT_WIN_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78-windows-x64.zip
   TOMCAT_WIN_NAME: apache-tomcat-9.0.78.zip
   TOMCAT_DIR: apache-tomcat-9.0.78
   IB_URL: https://releases.installbuilder.com/installbuilder/installbuilder-enterprise-23.4.0-linux-installer.run
@@ -157,7 +157,7 @@ jobs:
             --mode unattended --prefix /tmp/lucee --installconn false --installmodcfml false --installiis false --startatboot false \
             --luceepass ibtest --systemuser $USER --installjre true
           sleep 5;
-          echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
+          echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee Linux ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
           curl http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }} --fail-with-body -o $GITHUB_STEP_SUMMARY
           #sleep 5
           #sudo /tmp/lucee/lucee_ctl stop
@@ -188,6 +188,8 @@ jobs:
           ./lucee-${{ env.LUCEE_VERSION }}-windows-x64-installer.exe `
             --mode unattended --installconn false --installmodcfml false --installiis false --startatboot false `
             --luceepass ibtest --installjre true
+          echo "<cfscript>if (server.lucee.version neq url.version) header statuscode='500' statustext='wrong version #server.lucee.version#'; echo('## Lucee Windows ' & server.lucee.version & ', using java ' & server.java.version);</cfscript>" > /tmp/lucee/tomcat/webapps/ROOT/check.cfm
+          curl http://127.0.0.1:8888/check.cfm?version=${{ env.LUCEE_VERSION }} --fail-with-body -o $GITHUB_STEP_SUMMARY
       - name: debug failure
         if: ${{ failure() }}
         run: |
